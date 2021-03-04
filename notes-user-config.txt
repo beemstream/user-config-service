@@ -1,0 +1,27 @@
+favourited streams
+layout configurations
+broadcaster stream settings
+    - save title/tags present
+    - table layout
+      - title
+      - tags - many tags to one title
+
+beemstream.com/api/stream-config/{username}/favourite-streams
+
+POST /<username>/favourite-streams
+{
+    "identifier": string;
+    "source": "Twitch" | "Youtube" | "BeemStream"
+}
+
+beemstream.com/api/stream-config/{username}/stream-management
+
+POST /<username>/stream-management/stream-preset
+{
+    "identifier": string;
+}
+
+Next to do:
+    Profile Service
+        - endpoint that returns profile data such as username
+            - store the associated_user from profile data
