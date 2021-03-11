@@ -13,10 +13,26 @@ use serde::{Deserialize, Serialize};
 pub mod authenticate;
 pub mod schema;
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize)]
+enum StreamSource {
+    Twitch,
+    Youtube
+}
+
+impl StreamSource {
+    pub fn from(source: StreamSource) -> String {
+        match source {
+            StreamSource::Twitch => "Twitch",
+            StreamSource::Youtube => "Toutube"
+        }.to_owned()
+    }
+}
+
+
+#[derive(Debug, Deserialize)]
 struct FavouriteStreamsRequest {
     identifier: String,
-    source: String,
+    source: StreamSource,
 }
 
 #[derive(Debug, Insertable)]
@@ -27,7 +43,7 @@ struct FavouriteStreamsModel {
     pub source: String,
 }
 
-#[derive(Debug, Insertable, Queryable, Serialize, Deserialize)]
+#[derive(Debug, Insertable, Queryable, Serialize)]
 #[table_name = "favourite_streams"]
 struct SavedFavouriteStreamsModel {
     pub id: i32,
@@ -41,9 +57,26 @@ impl FavouriteStreamsModel {
         Self {
             associated_user: user,
             identifier: streamer.identifier,
-            source: streamer.source,
+            source: StreamSource::from(streamer.source),
         }
     }
+
+}
+
+#[derive(Debug, Serialize)]
+struct FavouriteStreamResponse {
+    pub identifier: String,
+    pub source: String,
+}
+
+impl FavouriteStreamResponse {
+    pub fn from(saved_favourited_streamer: SavedFavouriteStreamsModel) -> Self {
+        Self {
+            identifier: saved_favourited_streamer.identifier,
+            source: saved_favourited_streamer.source,
+        }
+    }
+
 }
 
 #[post("/favourite-streams", data = "<favourite_streams_request>")]
@@ -60,10 +93,9 @@ async fn favourite_stream(
         &db_conn,
         profile.id,
         favourite_stream_unpacked.identifier.clone(),
-        favourite_stream_unpacked.source.clone(),
+        StreamSource::from(favourite_stream_unpacked.source.clone()),
     )
-    .await
-    .unwrap();
+    .await?;
 
     match has_found_conflict > 0 {
         true => Err(Status::Conflict),
@@ -72,8 +104,7 @@ async fn favourite_stream(
                 &db_conn,
                 FavouriteStreamsModel::from(favourite_stream_unpacked, profile.id),
             )
-            .await
-            .unwrap();
+            .await?;
 
             Ok(Status::Created)
         }
@@ -85,12 +116,14 @@ async fn get_favourite_streams(
     db_conn: DbConn,
     global_config: State<'_, GlobalConfig>,
     access_token: AccessToken,
-) -> Result<Json<Vec<SavedFavouriteStreamsModel>>, Status> {
+) -> Result<Json<Vec<FavouriteStreamResponse>>, Status> {
     debug!("logging in with {}", &access_token.0);
 
     let profile = get_profile(&access_token.0, &global_config.auth_url).await?;
 
-    let response = find_all_favourited_streamers(&db_conn, profile.id).await?;
+    let all_favourited_streams = find_all_favourited_streamers(&db_conn, profile.id).await?;
+
+    let response = all_favourited_streams.into_iter().map(|s| FavouriteStreamResponse::from(s)).collect();
 
     Ok(Json(response))
 }
