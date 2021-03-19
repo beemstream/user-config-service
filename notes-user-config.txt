@@ -8,20 +8,39 @@ broadcaster stream settings
 
 beemstream.com/api/stream-config/{username}/favourite-streams
 
-POST /<username>/favourite-streams
+POST /favourite-streams
+token: Bearer xxx
 {
     "identifier": string;
     "source": "Twitch" | "Youtube" | "BeemStream"
 }
 
-beemstream.com/api/stream-config/{username}/stream-management
 
-POST /<username>/stream-management/stream-preset
-{
+GET /favourite-streams
+token: Bearer xxx
+[{
     "identifier": string;
+    "source": "Twitch" | "Youtube" | "BeemStream"
+}]
+
+beemstream.com/api/stream-config/stream-management
+
+StreamTag {
+    id: string;
+    name: string;
+    source: youtube
 }
 
+POST /stream-management/stream-preset/{provider}
+{
+    "stream_title": string;
+    "stream_tags": StreamTag[];
+}
+
+GET /stream-management/tags/{provider}
+[{ id: string; tag_name: string }]
+
 Next to do:
-    Profile Service
+    Profile Service - done
         - endpoint that returns profile data such as username
             - store the associated_user from profile data

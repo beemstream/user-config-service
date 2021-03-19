@@ -1,3 +1,4 @@
+use log::info;
 use rocket::{
     http::Status,
     request::{FromRequest, Outcome},
@@ -16,7 +17,11 @@ pub enum AccessTokenError {
 
 pub fn is_token_valid(token: &str) -> bool {
     let request_token: Vec<&str> = token.split(" ").collect();
-    request_token.starts_with(&["Bearer"])
+    let is_valid = request_token.starts_with(&["Bearer"]);
+
+    info!("is token validated {}", is_valid);
+
+    is_valid
 }
 
 #[async_trait]
@@ -28,7 +33,6 @@ impl<'a, 'r> FromRequest<'a, 'r> for AccessToken {
     ) -> rocket::request::Outcome<Self, Self::Error> {
         let keys: Vec<&str> = request.headers().get("token").collect();
         match keys.len() {
-            0 => Outcome::Failure((Status::Unauthorized, AccessTokenError::Missing)),
             1 if is_token_valid(keys[0]) => Outcome::Success(AccessToken(keys[0].to_string())),
             _ => Outcome::Failure((Status::Unauthorized, AccessTokenError::Invalid)),
         }

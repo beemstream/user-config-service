@@ -1,4 +1,5 @@
-use isahc::{AsyncReadResponseExt, http::StatusCode};
+use isahc::{http::StatusCode, AsyncReadResponseExt};
+use log::info;
 use rocket::http::Status;
 use serde::Deserialize;
 
@@ -18,10 +19,10 @@ pub async fn get_profile(access_token: &str, url: &str) -> Result<Profile, Statu
     let mut response = isahc::send_async(request).await.unwrap();
 
     if response.status() != StatusCode::OK {
-        return Err(Status::Unauthorized)
+        info!("failed to authenticate profile {}", response.status());
+        return Err(Status::Unauthorized);
     }
 
     let json = response.json().await.unwrap();
     Ok(json)
 }
-

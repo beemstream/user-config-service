@@ -2,7 +2,7 @@ use rocket::http::Status;
 use rocket_contrib::databases::diesel::prelude::*;
 use serde::{Deserialize, Serialize};
 
-use crate::{DbConn, FavouriteStreamsRequest, schema::favourite_streams};
+use crate::{favourite_streams::FavouriteStreamsRequest, schema::favourite_streams, DbConn};
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub enum StreamSource {
@@ -92,4 +92,3 @@ pub async fn find_all_favourited_streamers(
         })
         .await
 }
-
