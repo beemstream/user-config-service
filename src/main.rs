@@ -6,7 +6,7 @@ use rocket::{launch, routes};
 use rocket_contrib::database;
 use rocket_contrib::databases::diesel::PgConnection;
 use serde::Deserialize;
-use stream_management::post_stream_management;
+use stream_management::{get_stream_management, post_stream_management, put_stream_management};
 
 pub mod authenticate;
 pub mod database;
@@ -22,6 +22,7 @@ pub struct DbConn(PgConnection);
 #[derive(Deserialize)]
 pub struct GlobalConfig {
     auth_url: String,
+    twitch_client_id: String,
 }
 
 #[launch]
@@ -39,7 +40,9 @@ fn rocket() -> rocket::Rocket {
             routes![
                 post_favourite_stream,
                 get_favourite_streams,
-                post_stream_management
+                post_stream_management,
+                get_stream_management,
+                put_stream_management
             ],
         )
 }
