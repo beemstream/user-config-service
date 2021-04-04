@@ -1,6 +1,5 @@
 use futures::future::{join, try_join_all};
-use log::debug;
-use rocket::{get, http::Status, post, put, State};
+use rocket::{debug, get, http::Status, post, put, State};
 use rocket_contrib::json::Json;
 use serde::{Deserialize, Serialize};
 
@@ -12,7 +11,8 @@ use crate::{
     },
     service::{
         get_channel_information, get_twitch_profile, modify_channel_information,
-        replace_stream_tags, ModifyChannelRequest, ReplaceTagsRequest, TwitchUser,
+        replace_stream_tags, replace_stream_tags_empty, ModifyChannelRequest, ReplaceTagsRequest,
+        TwitchUser,
     },
     DbConn, GlobalConfig,
 };
@@ -89,13 +89,14 @@ pub async fn get_stream_management(
     db_conn: DbConn,
     access_token: AccessToken,
 ) -> Result<Json<Vec<StreamPreset>>, Status> {
+    debug!("ran through");
     let profile: TwitchUser = get_user(&access_token).await?;
     let titles = find_stream_titles(&db_conn, profile.user_id).await?;
 
     let mut stream_preset_response = vec![];
 
     for title in &titles {
-        let tags = find_stream_tag(&db_conn, title.id).await?;
+        let tags = find_stream_tag(&db_conn, title.clone()).await?;
 
         let response = StreamPreset {
             id: title.id,
@@ -118,7 +119,7 @@ pub async fn put_stream_management(
 ) -> Result<Status, Status> {
     let profile: TwitchUser = get_user(&access_token).await?;
     let title = find_stream_title(&db_conn, preset_id).await?;
-    let tags = find_stream_tag(&db_conn, title.id).await?;
+    let tags = find_stream_tag(&db_conn, title.clone()).await?;
 
     let channel_info = get_channel_information(
         &access_token.0,
@@ -135,7 +136,7 @@ pub async fn put_stream_management(
 
     let tag_ids: Vec<String> = tags.into_iter().map(|t| t.source_id).collect();
 
-    let replace_tags_request = ReplaceTagsRequest { tag_ids };
+    let replace_tags_request = ReplaceTagsRequest { tag_ids: vec![] };
 
     let channel_modify = modify_channel_information(
         &access_token.0,

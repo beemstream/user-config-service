@@ -7,7 +7,7 @@ CREATE TABLE stream_title (
 
 CREATE TABLE stream_tag (
     id SERIAL PRIMARY KEY,
-    associated_title INT NOT NULL,
+    associated_title INT NOT NULL references stream_title(id),
     source_id VARCHAR NOT NULL,
     name VARCHAR NOT NULL
 );

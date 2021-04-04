@@ -1,5 +1,4 @@
-use log::debug;
-use rocket::{get, http::Status, post, State};
+use rocket::{debug, get, http::Status, post, State};
 use rocket_contrib::json::Json;
 use serde::{Deserialize, Serialize};
 

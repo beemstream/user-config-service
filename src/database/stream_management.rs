@@ -74,7 +74,7 @@ pub struct StreamPreset {
     tags: Vec<StreamTagModel>,
 }
 
-#[derive(Debug, Insertable, Queryable)]
+#[derive(Debug, Identifiable, Insertable, Queryable, PartialEq, Clone)]
 #[table_name = "stream_title"]
 pub struct SavedTitleModel {
     pub id: i32,
@@ -107,7 +107,8 @@ pub async fn find_stream_title(db_conn: &DbConn, id: i32) -> Result<SavedTitleMo
         .await
 }
 
-#[derive(Debug, Insertable, Queryable, Serialize)]
+#[derive(Debug, Identifiable, Insertable, Queryable, Serialize, Associations, PartialEq)]
+#[belongs_to(SavedTitleModel, foreign_key = "associated_title")]
 #[table_name = "stream_tag"]
 pub struct SavedTagModel {
     pub id: i32,
@@ -118,12 +119,11 @@ pub struct SavedTagModel {
 
 pub async fn find_stream_tag(
     db_conn: &DbConn,
-    title_id: i32,
+    title: SavedTitleModel,
 ) -> Result<Vec<SavedTagModel>, Status> {
     db_conn
         .run(move |c| {
-            stream_tag::table
-                .filter(stream_tag::associated_title.eq(title_id))
+            SavedTagModel::belonging_to(&title)
                 .get_results::<SavedTagModel>(c)
                 .map_err(|_| Status::NotFound)
         })

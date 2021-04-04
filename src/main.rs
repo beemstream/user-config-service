@@ -10,13 +10,12 @@ use stream_management::{get_stream_management, post_stream_management, put_strea
 
 pub mod authenticate;
 pub mod database;
-mod favourite_streams;
 pub mod schema;
 pub mod service;
+mod favourite_streams;
 mod stream_management;
 
 #[database("pg_conn")]
-
 pub struct DbConn(PgConnection);
 
 #[derive(Deserialize)]
@@ -28,7 +27,6 @@ pub struct GlobalConfig {
 #[launch]
 fn rocket() -> rocket::Rocket {
     openssl_probe::init_ssl_cert_env_vars();
-    env_logger::init();
     let rocket = rocket::ignite();
     let global_config: GlobalConfig = rocket.figment().extract().expect("global config");
 

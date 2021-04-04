@@ -24,4 +24,6 @@ table! {
     }
 }
 
+joinable!(stream_tag -> stream_title (associated_title));
+
 allow_tables_to_appear_in_same_query!(favourite_streams, stream_tag, stream_title,);

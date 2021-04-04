@@ -1,6 +1,6 @@
-use log::info;
 use rocket::{
     http::Status,
+    info,
     request::{FromRequest, Outcome},
 };
 

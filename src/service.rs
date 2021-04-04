@@ -1,6 +1,6 @@
 use isahc::{http::StatusCode, AsyncReadResponseExt, Request};
-use log::info;
 use rocket::http::Status;
+use rocket::info;
 use serde::{Deserialize, Serialize};
 
 #[derive(Deserialize)]
@@ -131,6 +131,32 @@ pub async fn modify_channel_information(
 #[derive(Debug, Serialize)]
 pub struct ReplaceTagsRequest {
     pub tag_ids: Vec<String>,
+}
+
+pub async fn replace_stream_tags_empty(
+    access_token: &str,
+    user_id: &str,
+    client_id: &str,
+) -> Result<Status, Status> {
+    let request = Request::builder()
+        .uri(format!(
+            "https://api.twitch.tv/helix/streams/tags?broadcaster_id={}",
+            user_id
+        ))
+        .method("PUT")
+        .header("Authorization", access_token)
+        .header("Client-Id", client_id)
+        .header("Content-Type", "application/json")
+        .body(())
+        .unwrap();
+
+    let response = isahc::send_async(request).await.unwrap();
+
+    if response.status() != StatusCode::OK {
+        info!("user not found failed with {:?}", response.status());
+        return Err(Status::NotFound);
+    }
+    Ok(Status::NoContent)
 }
 
 pub async fn replace_stream_tags(
