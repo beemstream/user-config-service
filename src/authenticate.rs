@@ -25,12 +25,10 @@ pub fn is_token_valid(token: &str) -> bool {
 }
 
 #[async_trait]
-impl<'a, 'r> FromRequest<'a, 'r> for AccessToken {
+impl<'r> FromRequest<'r> for AccessToken {
     type Error = AccessTokenError;
 
-    async fn from_request(
-        request: &'a rocket::Request<'r>,
-    ) -> rocket::request::Outcome<Self, Self::Error> {
+    async fn from_request(request: &'r rocket::Request<'_>) -> Outcome<Self, Self::Error> {
         let keys: Vec<&str> = request.headers().get("token").collect();
         match keys.len() {
             1 if is_token_valid(keys[0]) => Outcome::Success(AccessToken(keys[0].to_string())),
