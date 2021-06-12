@@ -1,6 +1,5 @@
 use futures::future::{join, try_join_all};
-use rocket::{debug, get, http::Status, post, put, State};
-use rocket_contrib::json::Json;
+use rocket::{debug, get, http::Status, post, put, serde::json::Json, State};
 use serde::{Deserialize, Serialize};
 
 use crate::{
@@ -11,8 +10,7 @@ use crate::{
     },
     service::{
         get_channel_information, get_twitch_profile, modify_channel_information,
-        replace_stream_tags, replace_stream_tags_empty, ModifyChannelRequest, ReplaceTagsRequest,
-        TwitchUser,
+        replace_stream_tags, ModifyChannelRequest, ReplaceTagsRequest, TwitchUser,
     },
     DbConn, GlobalConfig,
 };
@@ -115,7 +113,7 @@ pub async fn put_stream_management(
     db_conn: DbConn,
     access_token: AccessToken,
     preset_id: i32,
-    global_config: State<'_, GlobalConfig>,
+    global_config: &State<GlobalConfig>,
 ) -> Result<Status, Status> {
     let profile: TwitchUser = get_user(&access_token).await?;
     let title = find_stream_title(&db_conn, preset_id).await?;

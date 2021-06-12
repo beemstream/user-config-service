@@ -4,7 +4,7 @@ use crate::{
     DbConn,
 };
 use rocket::http::Status;
-use rocket_contrib::databases::diesel::prelude::*;
+use rocket_sync_db_pools::diesel::prelude::*;
 use serde::Serialize;
 
 #[derive(Debug, Insertable, Queryable)]

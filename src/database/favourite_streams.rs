@@ -1,5 +1,5 @@
 use rocket::http::Status;
-use rocket_contrib::databases::diesel::prelude::*;
+use rocket_sync_db_pools::diesel::prelude::*;
 use serde::{Deserialize, Serialize};
 
 use crate::{favourite_streams::FavouriteStreamsRequest, schema::favourite_streams, DbConn};

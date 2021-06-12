@@ -1,5 +1,4 @@
-use rocket::{debug, get, http::Status, post, State};
-use rocket_contrib::json::Json;
+use rocket::{debug, get, http::Status, post, serde::json::Json, State};
 use serde::{Deserialize, Serialize};
 
 use crate::{
@@ -36,7 +35,7 @@ impl FavouriteStreamResponse {
 #[get("/favourite-streams")]
 pub async fn get_favourite_streams(
     db_conn: DbConn,
-    global_config: State<'_, GlobalConfig>,
+    global_config: &State<GlobalConfig>,
     access_token: AccessToken,
 ) -> Result<Json<Vec<FavouriteStreamResponse>>, Status> {
     debug!("got token {}", &access_token.0);
@@ -56,7 +55,7 @@ pub async fn get_favourite_streams(
 pub async fn post_favourite_stream(
     db_conn: DbConn,
     favourite_streams_request: Json<FavouriteStreamsRequest>,
-    global_config: State<'_, GlobalConfig>,
+    global_config: &State<GlobalConfig>,
     access_token: AccessToken,
 ) -> Result<Status, Status> {
     let profile = get_profile(&access_token.0, &global_config.auth_url).await?;
